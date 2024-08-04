@@ -27,6 +27,10 @@ const style = {
     flexDirection: 'column',
     gap: 3
 }
+
+
+
+
 // Manages inventory list, modal staet, and new item input
 export default function Home(){
     // We'll add our component logic here
@@ -37,6 +41,54 @@ export default function Home(){
     //An "Add New Item" button to open the modal
     // A box displaying the inventory items
     // For each item, we show its name, quanity and a "Remove" button
+
+    // Queries the inventory collection in firestore and updates our local state. 
+
+  const updateInventory = async () => {
+    const snapshot = query(collection(firestore, 'inventory'))
+    const docs = await getDocs(snapshot)
+    const inventoryList = []
+    docs.forEach((doc) => {
+        inventoryList.push({ name: doc.id, ...doc.data()})
+    })
+    setInventory(inventoryList)
+  }
+  // The 'useEffect' hook ensure this runs when the component mounts
+  useEffect(() => {
+    updateInventory()
+  }, [])
+
+
+    // Adds items to Firestore inventory and update local state
+  const addItem = async (item) => {
+    const docRef = doc(collection(firestore, 'inventory'), item)
+    const docSnap = await getDoc(docRef)
+    if (docSnap.exists()) {
+        const {quantity} = docSnap.data()
+        await setDoc(docRef, {quantity: quantity + 1 })
+    } else {
+        await setDoc(docRef, {quantity: 1})
+    }
+    await updateInventory()
+  }
+  // Removes items from Firestore inventory and update local state
+  const removeItem = async (item) => {
+    const docRef = doc(collection(firestore, 'inventory'), item)
+    const docSnap = await getDoc(docRef)
+    if (docSnap.exists()) {
+        const { quantity } = docSnap.data()
+        if (quantity === 1){
+            await deleteDoc(docRef)
+        } else {
+            await setDoc(docRef, { quantity: quantity - 1})
+        }
+    }
+    await updateInventory()
+  }
+
+  // Add modal controls to manage modal state
+  const handleOpen = () => setOpen(true)
+  const handleClose = () => setOpen(false)
     return (
         <Box
           width="100vw"
@@ -122,50 +174,5 @@ export default function Home(){
           </Box>
         </Box>
       )
-// Queries the inventory collection in Firestone and updates our local state. 
-
-const updateInventory = async () => {
-    const snapshot = query(collection(firestore, 'inventory'))
-    const docs = await getDocs(snapshot)
-    const inventoryList = []
-    docs.forEach((doc) => {
-        inventoryList.push({ name: doc.id, ...doc.data()})
-    })
-    setInventory(inventoryList)
-}
-// The 'useEffect' hook ensure this runs when the component mounts
-useEffect(() => {
-    updateInventory()
-}, [])
-// Adds items to Firestore inventory and update local state
-const addItem = async (item) => {
-    const docRef = doc(collection(firestore, 'inventory'), item)
-    const docSnap = await getDoc(docRef)
-    if (docSnap.exists()) {
-        const {quantity} = docSnap.data()
-        await setDoc(docRef, {quantity: quantity + 1 })
-    } else {
-        await setDoc(docRef, {quantity: 1})
-    }
-    await updateInventory
-}
-// Removes items from Firestore inventory and update local state
-const removeItem = async (item) => {
-    const docRef = doc(collection(firestone, 'inventory'), item)
-    const docSnap = await getDoc(docRef)
-    if (docSnap.exists()) {
-        const { quantity } = docSnap.data()
-        if (quantity === 1){
-            await deleteDoc(docRef)
-        } else {
-            await setDoc(docRef, { quantity: quantity - 1})
-        }
-    }
-    await updateInventory()
-}
-
-// Add modal controls to manage modal state
-const handleOpen = () => setOpen(true)
-const handleClose = () => setOpen(false)
 
 }
