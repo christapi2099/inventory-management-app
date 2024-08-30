@@ -15,27 +15,6 @@ import {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const style = {
     position: 'absolute',
     top: '50%',
