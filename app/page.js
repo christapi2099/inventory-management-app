@@ -14,8 +14,6 @@ import {
 } from 'firebase/firestore'
 
 
-
-
 const style = {
     position: 'absolute',
     top: '50%',
